@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>DRAW</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <style>
+        td {
+            border: 1px solid black;
+            width: 20px;
+            height: 20px;
+        }
+        
+        td.red {
+            background-color: red;
+        }
+        
+        td.green {
+            background-color: green;
+        }
+        
+        td.blue {
+            background-color: blue;
+        }
+    </style>
+
+    <script>
+        var activeColor;
+
+        function createMenu(selector) {
+            var i;
+            var $menu = $('<table>');
+
+            $menu.append($('<td>').css('background-color', 'red').click(function(event) {
+                activeColor = 'red';
+            }));
+            $menu.append($('<td>').css('background-color', 'green').click(function(event) {
+                activeColor = 'green';
+            }));
+            $menu.append($('<td>').css('background-color', 'blue').click(function(event) {
+                activeColor = 'blue';
+            }));
+
+
+            $(selector).append($menu);
+
+        }
+
+        function createTable(selector) {
+            var i, j;
+            var $table = $('<table>');
+
+            for (i = 0; i < 8; i++) {
+                var $tr = $('<tr>');
+                for (j = 0; j < 8; j++) {
+                    $tr.append(
+                        $('<td>').attr({
+                            'id': i + '' + j,
+                            "clicked": false,
+                            "currentColor": 'white'
+                        }).click(
+                            function(event) {
+
+                                if ($(this).attr('clicked') == 'false' || $(this).attr('currentColor') != activeColor) {
+                                    $(this).removeClass();
+                                    $(this).toggleClass(activeColor);
+                                    $(this).attr("clicked", true);
+                                    $(this).attr("currentColor", activeColor);
+                                } else {
+                                    $(this).removeClass();
+                                    $(this).attr("clicked", false);
+                                }
+                            }
+                        )
+                    );
+                }
+                $table.append($tr);
+            }
+
+            $(selector).append($table);
+        }
+
+        function save() {
+                var name = $('#name').val();
+                var $trs = $('#tableholder table td');
+                var pixels = [];
+                for (var i in $trs) {
+                    var pixel = {};
+                    pixel.id = $trs[i].id;
+                    pixel.color = $trs[i].className;
+                    pixels.push(pixel);
+                }
+
+                localStorage.setItem(name, JSON.stringify(pixels));
+                listItems();
+
+            
+        }
+
+        function listItems() {
+            $('#itemList').empty();
+            for (var i in localStorage) {
+
+                if (typeof localStorage.getItem(i) === 'string') {
+                    $('#itemList').append(
+                        $('<option>').text(i)
+                    )
+                }
+            }
+        }
+
+        function loadPicture() {
+            var selected = $('#itemList :selected').text();
+            var pixels = JSON.parse(localStorage.getItem(selected));
+            for (var p in pixels) {
+                $('#' + pixels[p].id).attr('class', pixels[p].color);
+
+            }
+        }
+
+        function deleteItem() {
+            var selected = $('#itemList :selected').text();
+            localStorage.removeItem(selected);
+            listItems();
+
+        }
+        window.onload = function() {
+            createTable('#tableholder');
+            createMenu('#menuholder');
+            listItems();
+        }
+    </script>
+
+
+</head>
+
+<body>
+    <div id="tableholder"></div>
+    <div id="menuholder"></div>
+    <div id="save">
+        <p>Name the picture</p>
+        <input id="name"></input>
+        <button id="btnSave" , onclick="save()">Save</button>
+
+        <p><select id="itemList" size="10"></p>
+        </select>
+        <button id="btnLoad" , onclick="loadPicture()">Load</button>
+        <button id="btnDelete" , onclick="deleteItem()">Delete</button>
+    </div>
+
+</body>
+
+</html>
